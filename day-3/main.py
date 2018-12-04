@@ -1,4 +1,4 @@
-from collections import Counter, namedtuple
+from collections import namedtuple
 
 Order = namedtuple("Order", "id shiftleft shifttop width height")
 with open("data.txt") as f:
