@@ -3,12 +3,11 @@ with open("data.txt") as f:
 
 
 def react_polymer(pol):
-    pol = [(ord(c) - ord("A")) + 1 for c in pol]
-    pol = [c if c < 33 else -(c - 32) for c in pol]
+    pol = [ord(c) for c in pol]
 
     i = 0
     while i < len(pol) - 1:
-        if pol[i] == -pol[i + 1]:
+        if abs(pol[i] - pol[i + 1]) == 32:
             del pol[i]
             del pol[i]
             i -= 1
@@ -22,7 +21,8 @@ def part1():
     return len(react_polymer(polymer))
 
 
-def part2():
+def part2(polymer):
+    polymer = "".join([chr(x) for x in react_polymer(polymer)])
     return min(
         len(react_polymer(pol))
         for pol in [
@@ -32,4 +32,4 @@ def part2():
     )
 
 
-print("1)", part1(), "\n2)", part2())
+print("1)", part1(), "\n2)", part2(polymer))
