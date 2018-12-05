@@ -2,43 +2,33 @@ with open("data.txt") as f:
     polymer = f.read().strip()
 
 
-def single_reaction_pass(x):
-    changes = 0
+def react_polymer(pol):
+    pol = [(ord(c) - ord("A")) + 1 for c in pol]
+    pol = [c if c < 33 else -(c - 32) for c in pol]
 
-    poly = []
     i = 0
-    while i < len(x) - 1:
-        ch, nextch = x[i], x[i + 1]
+    while i < len(pol) - 1:
+        if pol[i] == -pol[i + 1]:
+            del pol[i]
+            del pol[i]
+            i -= 1
+        else:
+            i += 1
 
-        if abs(ord(ch) - ord(nextch)) == 32:
-            changes += 1
-            i += 2
-            continue
-
-        poly.append(ch)
-        i += 1
-
-    poly += [x[-1]]
-
-    return poly, changes
-
-
-def react_polymer(polymer):
-    changes = 1
-    while changes != 0:
-        polymer, changes = single_reaction_pass(polymer)
-
-    return len(polymer)
+    return pol
 
 
 def part1():
-    return react_polymer(polymer)
+    return len(react_polymer(polymer))
 
 
 def part2():
     return min(
-        react_polymer(polymer.replace(chr(a), "").replace(chr(a - 32), ""))
-        for a in range(ord("a"), ord("z") + 1)
+        len(react_polymer(pol))
+        for pol in [
+            polymer.replace(chr(a), "").replace(chr(a - 32), "")
+            for a in range(ord("a"), ord("z") + 1)
+        ]
     )
 
 
