@@ -14,14 +14,17 @@ with open("data.txt") as f:
                 m[x][y].append((i, d))
 
 
-def wtf(minc, maxc, m, v):
-    return set(
-        Counter(
-            m[(x, y)][0]
-            for x in range(minc + v, maxc - v)
-            for y in range(minc + v, maxc - v)
-        ).items()
-    )
+def find_finite_ids(minc, maxc, dst):
+    def ar_inner(v):
+        return set(
+            Counter(
+                dst[(x, y)][0]
+                for x in range(minc + v, maxc - v)
+                for y in range(minc + v, maxc - v)
+            ).items()
+        )
+
+    return [a for a, b in (ar_inner(1) & ar_inner(2))]
 
 
 def part1():
@@ -38,21 +41,16 @@ def part1():
             lst.append(mxy[0])
 
     area_by_id = Counter(lst)
-
-    p1 = wtf(minc, maxc, dst, 1)
-    p2 = wtf(minc, maxc, dst, 2)
-
-    finite_ids = [a for a, b in (p1 & p2)]
-    return max(area_by_id[i] for i in finite_ids)
+    return max(area_by_id[i] for i in find_finite_ids(minc, maxc, dst))
 
 
 def part2():
-    licz = 0
+    reg = 0
     for x in range(minc, maxc):
         for y in range(minc, maxc):
-            licz += sum(d for i, d in m[x][y]) < 10000
+            reg += sum(d for i, d in m[x][y]) < 10000
 
-    return licz
+    return reg
 
 
 print("1)", part1(), "\n2)", part2())
