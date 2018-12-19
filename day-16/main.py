@@ -2,6 +2,35 @@ from collections import defaultdict
 import re
 
 
+def exec_op(fn):
+    def op(reg, a, b, c):
+        nreg = [x for x in reg]  # because lists are mutable
+        nreg[c] = fn(reg, a, b)
+        return nreg
+
+    return op
+
+
+OPERATIONS = {
+    "addr": exec_op(lambda reg, x, y: reg[x] + reg[y]),
+    "addi": exec_op(lambda reg, x, y: reg[x] + y),
+    "mulr": exec_op(lambda reg, x, y: reg[x] * reg[y]),
+    "muli": exec_op(lambda reg, x, y: reg[x] * y),
+    "banr": exec_op(lambda reg, x, y: reg[x] & reg[y]),
+    "bani": exec_op(lambda reg, x, y: reg[x] & y),
+    "borr": exec_op(lambda reg, x, y: reg[x] | reg[y]),
+    "bori": exec_op(lambda reg, x, y: reg[x] | y),
+    "setr": exec_op(lambda reg, x, y: reg[x]),
+    "seti": exec_op(lambda reg, x, y: x),
+    "gtir": exec_op(lambda reg, x, y: int(x > reg[y])),
+    "gtri": exec_op(lambda reg, x, y: int(reg[x] > y)),
+    "gtrr": exec_op(lambda reg, x, y: int(reg[x] > reg[y])),
+    "eqir": exec_op(lambda reg, x, y: int(x == reg[y])),
+    "eqri": exec_op(lambda reg, x, y: int(reg[x] == y)),
+    "eqrr": exec_op(lambda reg, x, y: int(reg[x] == reg[y])),
+}
+
+
 def part1():
     with open("data_registers.txt") as f:
         data = list([x.strip() for x in f.readlines()])
@@ -14,26 +43,7 @@ def part1():
             result = list(map(int, re.findall(r"\d", l3)))
             op, a, b, c = map(int, l2.split())
 
-            operations = {
-                "addr": lambda: reg[a] + reg[b],
-                "addi": lambda: reg[a] + b,
-                "mulr": lambda: reg[a] * reg[b],
-                "muli": lambda: reg[a] * b,
-                "banr": lambda: reg[a] & reg[b],
-                "bani": lambda: reg[a] & b,
-                "borr": lambda: reg[a] | reg[b],
-                "bori": lambda: reg[a] | b,
-                "setr": lambda: reg[a],
-                "seti": lambda: a,
-                "gtir": lambda: int(a > reg[b]),
-                "gtri": lambda: int(reg[a] > b),
-                "gtrr": lambda: int(reg[a] > reg[b]),
-                "eqir": lambda: int(a == reg[b]),
-                "eqri": lambda: int(reg[a] == b),
-                "eqrr": lambda: int(reg[a] == reg[b]),
-            }
-
-            poss = [k for k, v in operations.items() if result[c] == v()]
+            poss = [k for k, fn in OPERATIONS.items() if result == fn(reg, a, b, c)]
             over_2_possible += int(len(poss) > 2)
 
             for p in poss:
@@ -51,32 +61,12 @@ def part1():
 
 def part2(op_map):
     with open("data_program.txt") as f:
-        operators = {
-            "ad": lambda x, y: x + y,
-            "mu": lambda x, y: x * y,
-            "ba": lambda x, y: x & y,
-            "bo": lambda x, y: x | y,
-            "se": lambda x, y: x,
-            "gt": lambda x, y: int(x > y),
-            "eq": lambda x, y: int(x == y),
-        }
 
         reg = [0, 0, 0, 0]
         for l2 in f.readlines():
             op, a, b, c = map(int, l2.split())
             opnam = op_map[op]
-
-            if opnam[:2] in ("eq", "gt"):
-                operand1 = a if opnam[-2] == "i" else reg[a]
-                operand2 = b if opnam[-1] == "i" else reg[b]
-            elif opnam == "seti":
-                operand1 = a
-                operand2 = None
-            else:
-                operand1 = reg[a]
-                operand2 = b if opnam[-1] == "i" else reg[b]
-
-            reg[c] = operators[opnam[:2]](operand1, operand2)
+            reg = OPERATIONS[opnam](reg, a, b, c)
 
     return reg[0]
 
